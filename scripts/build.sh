@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build the Pi5 Monitor daemon (armv7, iOS 9) into native/pi5mon. Host: macOS with Command Line Tools.
+# Build the PI Monitor daemon (armv7, iOS 9) into native/pi5mon. Host: macOS with Command Line Tools.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SDK="${SDKROOT:-/Library/Developer/CommandLineTools/SDKs/MacOSX15.sdk}"

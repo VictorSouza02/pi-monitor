@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Pi5 Monitor</title>
+<title>PI Monitor</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html{background:#090b11}
@@ -29,8 +29,8 @@ body{min-height:100vh;color:#eef0f6;font:15px/1.35 -apple-system,"Helvetica Neue
 .ib{width:42px;height:42px;border-radius:21px;border:0;background:rgba(255,255,255,.07);color:#eef0f6;margin-left:10px;-webkit-flex:none;flex:none}
 .ib:active{background:rgba(255,255,255,.14)}
 .ib svg{width:20px;height:20px;display:block;margin:auto}
-.ib.pri{background:#ff2d6f;background:-webkit-linear-gradient(135deg,#ff2d6f,#ff7a45);background:linear-gradient(135deg,#ff2d6f,#ff7a45);box-shadow:0 6px 18px rgba(255,45,111,.35)}
-.ib.busy svg{-webkit-animation:spin .8s linear infinite;animation:spin .8s linear infinite}
+.ib.pri{background:#ff2d6f}
+.ib.busy svg{opacity:.45} /* no spin: at 1 s polling the button was animating most of the time */
 @-webkit-keyframes spin{to{-webkit-transform:rotate(360deg)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .back{margin:0 10px 0 0}
@@ -41,7 +41,8 @@ body{min-height:100vh;color:#eef0f6;font:15px/1.35 -apple-system,"Helvetica Neue
 
 /* cards */
 .grid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:0 -7px}
-.card{background:#121621;background:-webkit-linear-gradient(top,#151a27,#10131c);background:linear-gradient(180deg,#151a27,#10131c);
+/* solid on purpose: on iOS 9 every changed number repaints its card, and a gradient made that repaint costly */
+.card{background:#131723;
   border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:16px;margin:0 7px 14px;width:-webkit-calc(33.333% - 14px);width:calc(33.333% - 14px)}
 .card.w2{width:-webkit-calc(50% - 14px);width:calc(50% - 14px)}
 .card.w3{width:-webkit-calc(100% - 14px);width:calc(100% - 14px)}
@@ -160,7 +161,7 @@ td .meter{width:54px;display:inline-block;vertical-align:middle;margin-left:8px;
 <div id="vList">
   <div class="lhead f">
     <div class="logo" id="logo"></div>
-    <div class="grow"><h1>Pi5 Monitor</h1><div class="sub" id="lSub">Live stats over SSH, nothing running in the background.</div></div>
+    <div class="grow"><h1>PI Monitor</h1><div class="sub" id="lSub">Live stats over SSH, nothing running in the background.</div></div>
   </div>
   <div class="scanbox f" id="scanBox">
     <div class="radar"><div class="sweep"></div></div>
@@ -338,8 +339,7 @@ function spark(id, series, max, auto) {
     for (i = 0; i < a.length; i++) { var x = x0 + i * step, y = h - 2 - ((a[i] - lo) / (hi - lo)) * (h - 4); if (i) g.lineTo(x, y); else g.moveTo(x, y); }
     g.strokeStyle = series[s][1]; g.lineWidth = 2; g.lineJoin = "round"; g.stroke();
     g.lineTo(w, h); g.lineTo(x0, h); g.closePath();
-    var gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, series[s][1]); gr.addColorStop(1, "rgba(0,0,0,0)");
-    g.globalAlpha = 0.18; g.fillStyle = gr; g.fill(); g.globalAlpha = 1;
+    g.globalAlpha = 0.12; g.fillStyle = series[s][1]; g.fill(); g.globalAlpha = 1;
   }
 }
 function redraw() {
@@ -367,8 +367,11 @@ function clock() { var t = new Date(), p = function (n) { return (n < 10 ? "0" :
 function render(d, cached) {
   var i, a, live = !cached;
   if (live) {
-    names[d.ip] = d.host; store("names", names);
-    snap[d.ip] = { t: Date.now(), cpu: d.cpu, temp: d.temp, mem: d.mem[0] ? (d.mem[0] - d.mem[1]) * 100 / d.mem[0] : 0 }; store("snap", snap);
+    if (names[d.ip] !== d.host) { names[d.ip] = d.host; store("names", names); }
+    /* localStorage writes are synchronous disk I/O: the list-view snapshot is saved at most every 30 s */
+    var now = Date.now(), osn = snap[d.ip];
+    snap[d.ip] = { t: now, cpu: d.cpu, temp: d.temp, mem: d.mem[0] ? (d.mem[0] - d.mem[1]) * 100 / d.mem[0] : 0 };
+    if (!osn || now - (nodes.snapAt || 0) > 30000) { nodes.snapAt = now; store("snap", snap); }
     push("t", Date.now() / 1000);
   }
   txt("hName", d.host);
@@ -495,10 +498,11 @@ function drawDisk() {
     var e = box.children[i], it = leg[i];
     e.style.display = it ? "" : "none";
     if (!it) continue;
-    e.children[0].style.background = it[0];
-    e.children[1].textContent = it[1];
-    e.children[2].textContent = size(it[2]);
-    e.children[3].textContent = it[3] < 0.1 && it[2] ? "<0.1%" : it[3].toFixed(1) + "%";
+    if (e._c !== it[0]) { e._c = it[0]; e.children[0].style.background = it[0]; }
+    var t1 = size(it[2]), t2 = it[3] < 0.1 && it[2] ? "<0.1%" : it[3].toFixed(1) + "%";
+    if (e.children[1].textContent !== it[1]) e.children[1].textContent = it[1];
+    if (e.children[2].textContent !== t1) e.children[2].textContent = t1;
+    if (e.children[3].textContent !== t2) e.children[3].textContent = t2;
   }
   diskAge();
 }
@@ -572,7 +576,7 @@ function openHost(ip) {
     refresh();
   });
 }
-function showList() { stop(); host = null; setPeriod(0); store("last", null); el("vMon").className = "hide"; el("vList").className = ""; showKnown(null); }
+function showList() { stop(); store("snap", snap); host = null; setPeriod(0); store("last", null); el("vMon").className = "hide"; el("vList").className = ""; showKnown(null); }
 
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return "&#" + c.charCodeAt(0) + ";"; }); }
 /* Pi Monitor mark (raspberry + pulse), from the app icon in Pen */

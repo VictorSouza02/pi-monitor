@@ -1,6 +1,6 @@
-<img src="docs/icon.png" width="128" alt="Pi5 Monitor icon">
+<img src="docs/icon.png" width="128" alt="PI Monitor icon">
 
-# Pi5 Monitor
+# PI Monitor
 
 Real-time monitor for a Raspberry Pi 5, running on a jailbroken iPad mini 1 (iOS 9.3.6, armv7)
 as a home-screen web clip. Sibling project of Spotipad, same delivery model: a tiny native

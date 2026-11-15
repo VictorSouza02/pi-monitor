@@ -1,4 +1,4 @@
-/* Pi5 Monitor daemon for the iPad mini 1 (iOS 9, armv7).
+/* PI Monitor daemon for the iPad mini 1 (iOS 9, armv7).
  *
  * pi5mon [data_dir] [port] [lan]
  *

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Pi5 Monitor collector: forced command of the iPad's SSH key. Prints raw samples and exits.
+# PI Monitor collector: forced command of the iPad's SSH key. Prints raw samples and exits.
 # Reads only /proc and /sys (plus `df` and `vcgencmd`); all parsing happens on the iPad.
 # Request in $SSH_ORIGINAL_COMMAND:
 #   d            add a second sample of the fast counters 0.3 s later (instant rates, no history)
