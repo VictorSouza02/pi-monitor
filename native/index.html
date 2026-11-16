@@ -1,159 +1,218 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR" class="theme-light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>PI Monitor</title>
+<script>
+(function () {
+  try {
+    var raw = localStorage.getItem("theme"), pref = "system", dark = false;
+    if (raw) { try { pref = JSON.parse(raw); } catch (e) { pref = raw; } }
+    if (pref === "dark") dark = true;
+    else if (pref === "light") dark = false;
+    else if (window.matchMedia) {
+      try { dark = window.matchMedia("(prefers-color-scheme: dark)").matches; } catch (e2) {}
+    }
+    document.documentElement.className = dark ? "theme-dark" : "theme-light";
+  } catch (e3) { document.documentElement.className = "theme-light"; }
+})();
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html{background:#090b11}
-body{min-height:100vh;color:#eef0f6;font:15px/1.35 -apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;
-  background:#090b11 -webkit-radial-gradient(15% -10%,circle,#2a1530 0,rgba(9,11,17,0) 520px) no-repeat;
-  background:#090b11 radial-gradient(circle at 15% -10%,#2a1530 0,rgba(9,11,17,0) 520px) no-repeat;padding:30px 14px 28px}
+html.theme-light{
+  --bg:#F3F4F6;--surface:#FFFFFF;--border:#E5E7EB;--track:#EEF0F3;--ink:#111827;--muted:#6B7280;--faint:#9CA3AF;
+  --accent:#D6245C;--accentSoft:#FCE7EE;--ok:#15803D;--okSoft:#E6F4EA;--warn:#B45309;--warnSoft:#FEF3C7;
+  --crit:#DC2626;--critSoft:#FDE8E8;--info:#2563EB;--infoSoft:#E8F0FE;--onAccent:#FFF;
+  --overlay:rgba(17,24,39,.45);--spark:rgba(17,24,39,.18);
+  --segImg:#D6245C;--segCtr:#2563EB;--segVol:#B45309;--segBc:#15803D;--segSc:#6B7280;--segSys:#9CA3AF;--segFree:#E5E7EB;
+}
+html.theme-dark{
+  --bg:#0B0F17;--surface:#151B26;--border:#263041;--track:#1E2532;--ink:#F3F4F6;--muted:#9AA3B2;--faint:#6B7280;
+  --accent:#F0487C;--accentSoft:#3A1624;--ok:#4ADE80;--okSoft:#12301F;--warn:#FBBF24;--warnSoft:#33270C;
+  --crit:#F87171;--critSoft:#3A1717;--info:#60A5FA;--infoSoft:#13233F;--onAccent:#FFF;
+  --overlay:rgba(0,0,0,.55);--spark:rgba(243,244,246,.22);
+  --segImg:#F0487C;--segCtr:#60A5FA;--segVol:#FBBF24;--segBc:#4ADE80;--segSc:#9AA3B2;--segSys:#6B7280;--segFree:#263041;
+}
+html{background:var(--bg)}
+body{min-height:100vh;color:var(--ink);font:15px/1.35 -apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  -webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;background:var(--bg);padding:32px}
 .hide{display:none!important}
 .f{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center}
 .grow{-webkit-flex:1;flex:1;min-width:0}
-.muted{color:#8b91a7}
+.muted{color:var(--muted)}
 .tap{cursor:pointer}
+.col{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
 
 /* header */
-.head{margin-bottom:16px}
+.head{margin-bottom:20px}
 .title{font-size:26px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sub{font-size:13px;color:#8b91a7;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#3ddc97;margin:0 8px 3px 0;vertical-align:middle;box-shadow:0 0 0 3px rgba(61,220,151,.18)}
-.dot.off{background:#f25f7a;box-shadow:0 0 0 3px rgba(242,95,122,.18)}
-.dot.old{background:#8b91a7;box-shadow:0 0 0 3px rgba(139,145,167,.18)}
-.stale .grid{opacity:.55}
-.ib{width:42px;height:42px;border-radius:21px;border:0;background:rgba(255,255,255,.07);color:#eef0f6;margin-left:10px;-webkit-flex:none;flex:none}
-.ib:active{background:rgba(255,255,255,.14)}
+.sub{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;margin-left:10px;vertical-align:middle;background:var(--okSoft);color:var(--ok)}
+.chip.off{background:var(--critSoft);color:var(--crit)}
+.chip.old{background:var(--track);color:var(--muted)}
+.stale .grid,.stale .row2,.stale .alerts{opacity:.55}
+.ib{width:42px;height:42px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--ink);margin-left:10px;-webkit-flex:none;flex:none}
+.ib:active{background:var(--track)}
 .ib svg{width:20px;height:20px;display:block;margin:auto}
-.ib.pri{background:#ff2d6f}
-.ib.busy svg{opacity:.45} /* no spin: at 1 s polling the button was animating most of the time */
-@-webkit-keyframes spin{to{-webkit-transform:rotate(360deg)}}
-@keyframes spin{to{transform:rotate(360deg)}}
+.ib.pri{background:var(--accent);border-color:var(--accent);color:var(--onAccent)}
+.ib.busy svg{opacity:.45}
+.btnGhost{border:1px solid var(--border);border-radius:12px;padding:10px 14px;font:inherit;font-weight:600;color:var(--ink);background:var(--surface);margin-left:10px;-webkit-flex:none;flex:none}
+.btnGhost:active{background:var(--track)}
+.btnGhost svg{width:16px;height:16px;vertical-align:-3px;margin-right:6px}
 .back{margin:0 10px 0 0}
-.seg{background:rgba(255,255,255,.07);border-radius:21px;padding:3px;margin-left:10px;-webkit-flex:none;flex:none}
-.seg b{display:inline-block;font-weight:500;font-size:14px;padding:8px 11px;border-radius:18px;color:#8b91a7}
-.seg b.on{background:#eef0f6;color:#0d0f16}
-.err{background:rgba(242,95,122,.12);border:1px solid rgba(242,95,122,.35);color:#ffb7c5;border-radius:14px;padding:11px 14px;margin-bottom:14px;font-size:14px}
+.err{background:var(--critSoft);border:1px solid var(--crit);color:var(--crit);border-radius:16px;padding:11px 14px;margin-bottom:20px;font-size:14px}
 
-/* cards */
-.grid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:0 -7px}
-/* solid on purpose: on iOS 9 every changed number repaints its card, and a gradient made that repaint costly */
-.card{background:#131723;
-  border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:16px;margin:0 7px 14px;width:-webkit-calc(33.333% - 14px);width:calc(33.333% - 14px)}
-.card.w2{width:-webkit-calc(50% - 14px);width:calc(50% - 14px)}
-.card.w3{width:-webkit-calc(100% - 14px);width:calc(100% - 14px)}
-@media (min-width:1000px){.card.lw2{width:-webkit-calc(50% - 14px);width:calc(50% - 14px)}}
-.card h2{font-size:12px;font-weight:600;color:#8b91a7;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
-.card h2 .r{float:right;text-transform:none;letter-spacing:0;font-weight:500}
-.kv{display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;font-size:13px;color:#a7adc0;margin-top:6px}
-.kv b{font-weight:500;color:#eef0f6}
+/* cards / grid */
+.grid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:0 -10px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin:0 10px 20px;width:-webkit-calc(33.333% - 20px);width:calc(33.333% - 20px)}
+.card.w2{width:-webkit-calc(50% - 20px);width:calc(50% - 20px)}
+.card.w3{width:-webkit-calc(100% - 20px);width:calc(100% - 20px)}
+@media (min-width:1000px){.card.lw2{width:-webkit-calc(50% - 20px);width:calc(50% - 20px)}}
+.card h2{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:12px}
+.card h2 .r{float:right;font-weight:500;color:var(--muted)}
+.card h2 .ico{display:inline-block;vertical-align:-3px;margin-right:6px}
+.card h2 .ico svg{width:16px;height:16px}
+.kv{display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:8px}
+.kv b{font-weight:500;color:var(--ink)}
+.row2{display:-webkit-flex;display:flex;-webkit-align-items:stretch;align-items:stretch;margin:0 -10px 20px}
+.row2 .card{-webkit-flex:1;flex:1;width:auto;margin:0 10px;min-width:0;
+  display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+.row2 .card .body{-webkit-flex:1;flex:1}
 
-/* ring gauges */
-.gauge{position:relative;width:132px;height:132px;margin:2px auto 6px}
-.gauge svg{width:132px;height:132px;-webkit-transform:rotate(-90deg);transform:rotate(-90deg)}
-.gauge .c{position:absolute;left:0;right:0;top:40px;text-align:center}
-.gauge .v{font-size:32px;font-weight:300;letter-spacing:-.02em}
-.gauge .v small{font-size:15px;color:#8b91a7;margin-left:1px}
-.gauge .l{font-size:12px;color:#8b91a7}
-canvas{display:block;width:100%;height:38px;margin:8px 0 2px}
-.bars{display:-webkit-flex;display:flex;margin-top:6px}
+/* metric cards: big number + bar */
+.big{font-size:40px;font-weight:700;letter-spacing:-.03em;line-height:1.1;margin:4px 0 12px}
+.big small{font-size:20px;font-weight:600;color:var(--muted);margin-left:2px}
+.bar{height:10px;background:var(--track);border-radius:999px;overflow:hidden;margin-bottom:10px}
+.bar i{display:block;height:100%;width:0;border-radius:999px;background:var(--ok);-webkit-transition:width .2s;transition:width .2s}
+.det{font-size:13px;color:var(--muted);margin-top:4px}
+.bars{display:-webkit-flex;display:flex;margin-top:10px}
 .bars div{-webkit-flex:1;flex:1;margin-right:6px}
 .bars div:last-child{margin-right:0}
-.bars span{display:block;font-size:10px;color:#6f758a;text-align:center;margin-top:3px}
-.meter{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
-.meter i{display:block;height:100%;width:0;border-radius:3px;background:#3ddc97}
-.chips span{display:inline-block;font-size:12px;border-radius:12px;padding:3px 9px;margin:8px 5px 0 0;background:rgba(61,220,151,.12);color:#7cf0bd}
-.chips span.bad{background:rgba(242,95,122,.14);color:#ffb7c5}
-.chips span.warn{background:rgba(255,190,80,.14);color:#ffd590}
+.bars span{display:block;font-size:10px;color:var(--faint);text-align:center;margin-top:3px}
+.meter{height:6px;background:var(--track);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;border-radius:3px;background:var(--ok)}
+canvas{display:block;width:100%;height:38px;margin:10px 0 0}
+
+/* alerts */
+.alerts{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px}
+.alerts h2{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.alerts .hint{font-size:13px;color:var(--muted);margin-bottom:14px}
+.arow{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;padding:12px 0;border-top:1px solid var(--border)}
+.arow:first-of-type{border-top:0;padding-top:0}
+.atile{width:40px;height:40px;border-radius:12px;margin-right:12px;-webkit-flex:none;flex:none;
+  display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}
+.atile svg{width:20px;height:20px}
+.atile.crit{background:var(--critSoft);color:var(--crit)}
+.atile.warn{background:var(--warnSoft);color:var(--warn)}
+.arow .at{font-size:14px;font-weight:600;color:var(--ink)}
+.arow .ad{font-size:12px;color:var(--muted);margin-top:2px}
+.achip{margin-left:auto;-webkit-flex:none;flex:none;font-size:12px;font-weight:600;border-radius:999px;padding:4px 10px}
+.achip.crit{background:var(--critSoft);color:var(--crit)}
+.achip.warn{background:var(--warnSoft);color:var(--warn)}
 
 /* network */
-.nets{display:-webkit-flex;display:flex}
+.nets{display:-webkit-flex;display:flex;margin-bottom:4px}
 .nets div{-webkit-flex:1;flex:1}
-.nets .n{font-size:22px;font-weight:300;letter-spacing:-.01em;white-space:nowrap}
-.nets .lbl{font-size:12px;color:#8b91a7}
-.rx{color:#4cc2ff}.tx{color:#ff6fa3}
+.nets .n{font-size:22px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.nets .lbl{font-size:12px;color:var(--muted)}
+.rx{color:var(--info)}.tx{color:var(--accent)}
 
 /* storage */
-.stor{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center}
-.donut{position:relative;width:180px;height:180px;-webkit-flex:none;flex:none;margin-right:22px}
-.donut svg{width:180px;height:180px;-webkit-transform:rotate(-90deg);transform:rotate(-90deg)}
-.donut .c{position:absolute;left:0;right:0;top:60px;text-align:center}
-.donut .v{font-size:30px;font-weight:300}
-.donut .l{font-size:12px;color:#8b91a7}
-.legend{-webkit-flex:1;flex:1;min-width:0}
-.lg{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;font-size:14px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}
-.lg:last-child{border-bottom:0}
+.sbar{display:-webkit-flex;display:flex;height:16px;border-radius:999px;overflow:hidden;background:var(--track);margin:8px 0 16px}
+.sbar i{display:block;height:100%;min-width:0}
+.legend{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:0 -8px}
+.lg{width:50%;padding:6px 8px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;font-size:13px}
 .lg i{width:10px;height:10px;border-radius:3px;margin-right:10px;-webkit-flex:none;flex:none}
-.lg .nm{-webkit-flex:1;flex:1;color:#c9cdda;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lg .sz{font-weight:500;margin-left:8px}
-.lg .pc{width:48px;text-align:right;color:#8b91a7;font-size:12px}
-.foot{margin-top:12px;font-size:12px;color:#8b91a7}
-.link{color:#ff6f9a;font-weight:500;margin-left:6px}
+.lg .nm{-webkit-flex:1;flex:1;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg .sz{font-weight:500;margin-left:8px;color:var(--ink)}
+.foot{margin-top:14px;font-size:12px;color:var(--muted);display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+.link{color:var(--accent);font-weight:600;margin-left:auto;border:1px solid var(--border);border-radius:12px;padding:8px 12px;background:var(--surface)}
 
 /* tables */
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{font-weight:500;color:#6f758a;text-align:left;padding:0 4px 6px;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
-td{padding:7px 4px;border-top:1px solid rgba(255,255,255,.05);white-space:nowrap}
-td.n{max-width:0;overflow:hidden;text-overflow:ellipsis;width:55%;color:#d7dae5}
+th{font-weight:500;color:var(--faint);text-align:left;padding:0 4px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+td{padding:8px 4px;border-top:1px solid var(--border);white-space:nowrap}
+td.n{max-width:0;overflow:hidden;text-overflow:ellipsis;width:55%;color:var(--ink)}
 th.r,td.r{text-align:right}
 td .meter{width:54px;display:inline-block;vertical-align:middle;margin-left:8px;height:5px}
 
 /* device list */
-.lhead{margin:6px 2px 18px}
-.logo{width:56px;height:56px;border-radius:15px;margin-right:14px;-webkit-flex:none;flex:none;padding:5px;border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 24px rgba(227,36,91,.22);
+.lhead{margin:0 0 22px}
+.logo{width:56px;height:56px;border-radius:15px;margin-right:14px;-webkit-flex:none;flex:none;padding:5px;border:1px solid var(--border);
   background:#141414;background:-webkit-linear-gradient(top,#1e1e1e,#050505);background:linear-gradient(180deg,#1e1e1e,#050505)}
 .logo svg{width:44px;height:44px;display:block}
 .lhead h1{font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
-.scanbox{position:relative;overflow:hidden;border-radius:24px;padding:20px;margin-bottom:22px;border:1px solid rgba(255,255,255,.08);
-  background:#1a1424;background:-webkit-linear-gradient(135deg,#2a1330,#141a2b 60%,#10202a);background:linear-gradient(135deg,#2a1330,#141a2b 60%,#10202a)}
-.radar{position:relative;width:76px;height:76px;border-radius:50%;margin-right:18px;-webkit-flex:none;flex:none;border:1px solid rgba(255,111,154,.35);
-  background:rgba(255,45,111,.06)}
-.radar:before,.radar:after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(255,111,154,.25)}
-.radar:before{left:14px;top:14px;right:14px;bottom:14px}
-.radar:after{left:28px;top:28px;right:28px;bottom:28px;background:#ff2d6f;border:0;box-shadow:0 0 12px #ff2d6f}
-.sweep{position:absolute;left:0;top:0;width:50%;height:50%;border-radius:76px 0 0 0;-webkit-transform-origin:100% 100%;transform-origin:100% 100%;opacity:0;
-  background:-webkit-linear-gradient(0deg,rgba(255,45,111,0),rgba(255,45,111,.55));background:linear-gradient(90deg,rgba(255,45,111,0),rgba(255,45,111,.55))}
-.scanning .sweep{opacity:1;-webkit-animation:spin 1.4s linear infinite;animation:spin 1.4s linear infinite}
-.scanbox h3{font-size:19px;font-weight:600}
-.scanbox p{font-size:13px;color:#a7adc0;margin-top:3px}
-.sec{font-size:12px;color:#8b91a7;text-transform:uppercase;letter-spacing:.08em;margin:0 4px 10px}
-.sec .cnt{display:inline-block;background:rgba(255,255,255,.08);color:#c9cdda;border-radius:9px;padding:1px 7px;margin-left:6px;letter-spacing:0}
-.cards{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:0 -7px 12px}
-.dc{position:relative;width:-webkit-calc(50% - 14px);width:calc(50% - 14px);margin:0 7px 14px;padding:16px;border-radius:22px;cursor:pointer;
-  border:1px solid rgba(255,255,255,.07);background:#141926;background:-webkit-linear-gradient(top,#171d2c,#10141e);background:linear-gradient(180deg,#171d2c,#10141e)}
+.scanbox{border-radius:16px;padding:20px;margin-bottom:22px;border:1px solid var(--border);background:var(--surface)}
+.radar{position:relative;width:48px;height:48px;border-radius:12px;margin-right:14px;-webkit-flex:none;flex:none;
+  background:var(--okSoft);color:var(--ok);
+  display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}
+.radar svg{width:24px;height:24px}
+.scanning .radar{background:var(--accentSoft);color:var(--accent)}
+@-webkit-keyframes spin{to{-webkit-transform:rotate(360deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scanning .radar svg{-webkit-animation:spin 1.4s linear infinite;animation:spin 1.4s linear infinite}
+.scanbox h3{font-size:17px;font-weight:600}
+.scanbox p{font-size:13px;color:var(--muted);margin-top:3px}
+.sec{font-size:13px;font-weight:600;color:var(--muted);margin:0 4px 12px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center}
+.sec .cnt{margin-left:auto;background:var(--track);color:var(--ink);border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600}
+.cards{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:0 -10px 12px}
+.dc{position:relative;width:-webkit-calc(50% - 20px);width:calc(50% - 20px);margin:0 10px 20px;padding:20px;border-radius:16px;cursor:pointer;
+  border:1px solid var(--border);background:var(--surface)}
 .dc:active{-webkit-transform:scale(.98);transform:scale(.98)}
-.dc.pi{border-color:rgba(255,45,111,.28);box-shadow:0 10px 30px rgba(255,45,111,.10)}
-.dc .pic{width:46px;height:46px;border-radius:13px;padding:4px;-webkit-flex:none;flex:none;border:1px solid rgba(255,255,255,.06);
+.dc .pic{width:46px;height:46px;border-radius:13px;padding:4px;-webkit-flex:none;flex:none;border:1px solid var(--border);
   background:#141414;background:-webkit-linear-gradient(top,#1e1e1e,#050505);background:linear-gradient(180deg,#1e1e1e,#050505)}
 .dc .pic svg{width:36px;height:36px;display:block}
-.dc .pic.o{background:rgba(255,255,255,.06);color:#8b91a7;font-weight:700;font-size:12px;line-height:46px;text-align:center}
-.pill{margin-left:auto;font-size:12px;font-weight:500;border-radius:12px;padding:4px 10px;background:rgba(255,255,255,.07);color:#a7adc0;white-space:nowrap}
-.pill:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#8b91a7;margin:0 6px 1px 0;vertical-align:middle}
-.pill.on{background:rgba(61,220,151,.12);color:#7cf0bd}.pill.on:before{background:#3ddc97}
-.pill.off{background:rgba(242,95,122,.12);color:#ffb7c5}.pill.off:before{background:#f25f7a}
+.dc .pic.o{background:var(--track);color:var(--muted);font-weight:700;font-size:12px;line-height:46px;text-align:center;border:0}
+.pill{margin-left:auto;font-size:12px;font-weight:600;border-radius:999px;padding:4px 10px;background:var(--track);color:var(--muted);white-space:nowrap}
+.pill:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--faint);margin:0 6px 1px 0;vertical-align:middle}
+.pill.on{background:var(--okSoft);color:var(--ok)}.pill.on:before{background:var(--ok)}
+.pill.off{background:var(--critSoft);color:var(--crit)}.pill.off:before{background:var(--crit)}
 .dn{display:block;font-size:19px;font-weight:600;margin-top:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dip{font-size:13px;color:#a7adc0;margin-top:1px}
-.stats{display:-webkit-flex;display:flex;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06)}
-.stats div{-webkit-flex:1;flex:1}
-.stats b{display:block;font-size:17px;font-weight:500}
-.stats span{font-size:11px;color:#8b91a7;text-transform:uppercase;letter-spacing:.05em}
-.dmeta{font-size:12px;color:#6f758a;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dgo{margin-top:12px;font-size:13px;font-weight:600;color:#ff6f9a}
-.cards.sm .dc{width:-webkit-calc(33.333% - 14px);width:calc(33.333% - 14px);padding:14px}
+.dip{font-size:13px;color:var(--muted);margin-top:1px}
+.stats{display:-webkit-flex;display:flex;margin-top:14px}
+.stats div{-webkit-flex:1;flex:1;background:var(--track);border-radius:12px;padding:10px;margin-right:8px}
+.stats div:last-child{margin-right:0}
+.stats b{display:block;font-size:17px;font-weight:600}
+.stats span{font-size:11px;color:var(--muted)}
+.dmeta{font-size:12px;color:var(--faint);margin-top:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dgo{margin-top:14px;font-size:13px;font-weight:600;color:var(--onAccent);background:var(--accent);border-radius:12px;padding:10px 14px;text-align:center}
+.dc.simple .dgo{background:var(--surface);color:var(--ink);border:1px solid var(--border)}
+.cards.sm .dc{width:-webkit-calc(33.333% - 20px);width:calc(33.333% - 20px);padding:16px}
 .cards.sm .dn{font-size:15px;margin-top:10px}
 .cards.sm .pic{width:36px;height:36px;line-height:36px;border-radius:11px}
-.ecard{width:-webkit-calc(100% - 14px);width:calc(100% - 14px);margin:0 7px 14px;padding:22px;border-radius:22px;border:1px dashed rgba(255,255,255,.12);text-align:center;color:#8b91a7;font-size:14px}
-.mcard{border-radius:22px;padding:16px;border:1px solid rgba(255,255,255,.07);background:#121621;margin-bottom:20px}
-.mcard input{-webkit-flex:1;flex:1;min-width:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;color:#eef0f6;font:inherit;padding:12px 14px;-webkit-appearance:none}
-.mcard p{font-size:12px;color:#8b91a7;margin-top:8px}
-@media (min-width:1000px){.dc{width:-webkit-calc(33.333% - 14px);width:calc(33.333% - 14px)}.cards.sm .dc{width:-webkit-calc(25% - 14px);width:calc(25% - 14px)}}
-.btn{border:0;border-radius:14px;padding:11px 16px;font:inherit;font-weight:600;color:#fff;margin-left:10px;background:#ff2d6f;background:-webkit-linear-gradient(135deg,#ff2d6f,#ff7a45);background:linear-gradient(135deg,#ff2d6f,#ff7a45)}
+.ecard{width:-webkit-calc(100% - 20px);width:calc(100% - 20px);margin:0 10px 20px;padding:22px;border-radius:16px;border:1px dashed var(--border);text-align:center;color:var(--muted);font-size:14px}
+.mcard{border-radius:16px;padding:20px;border:1px solid var(--border);background:var(--surface);margin-bottom:20px}
+.mcard input{-webkit-flex:1;flex:1;min-width:0;background:var(--track);border:1px solid var(--border);border-radius:12px;color:var(--ink);font:inherit;padding:12px 14px;-webkit-appearance:none}
+.mcard p{font-size:12px;color:var(--muted);margin-top:8px}
+@media (min-width:1000px){.dc{width:-webkit-calc(33.333% - 20px);width:calc(33.333% - 20px)}.cards.sm .dc{width:-webkit-calc(25% - 20px);width:calc(25% - 20px)}}
+.btn{border:0;border-radius:12px;padding:11px 16px;font:inherit;font-weight:600;color:var(--onAccent);margin-left:10px;background:var(--accent)}
 .btn.busy{opacity:.6}
-@media (max-width:700px){.card{width:-webkit-calc(50% - 14px);width:calc(50% - 14px)}.stor{display:block}.donut{margin:0 auto 12px}}
+@media (max-width:700px){
+  body{padding:20px 14px 28px}
+  .card{width:-webkit-calc(50% - 20px);width:calc(50% - 20px)}
+  .row2{-webkit-flex-direction:column;flex-direction:column}
+  .row2 .card{margin:0 10px 20px;width:-webkit-calc(100% - 20px);width:calc(100% - 20px)}
+  .lg{width:100%}
+  .dc{width:-webkit-calc(100% - 20px);width:calc(100% - 20px)}
+}
+
+/* settings modal */
+.overlay{position:fixed;left:0;top:0;right:0;bottom:0;background:var(--overlay);z-index:40;
+  display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:24px}
+.modal{width:100%;max-width:480px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;color:var(--ink)}
+.modal h2{font-size:20px;font-weight:700}
+.modal .secL{font-size:13px;font-weight:600;color:var(--muted);margin:22px 0 10px}
+.modal .hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.4}
+.seg{display:-webkit-flex;display:flex;background:var(--track);border-radius:12px;padding:3px}
+.seg b{display:block;-webkit-flex:1;flex:1;text-align:center;font-weight:600;font-size:13px;padding:10px 4px;border-radius:10px;color:var(--muted)}
+.seg b.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.modal .footR{margin-top:24px;text-align:right}
+.modal .footR .btn{margin:0}
+.xbtn{width:36px;height:36px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--ink)}
+.xbtn svg{width:18px;height:18px;display:block;margin:auto}
 </style>
 </head>
 <body>
@@ -161,100 +220,124 @@ td .meter{width:54px;display:inline-block;vertical-align:middle;margin-left:8px;
 <div id="vList">
   <div class="lhead f">
     <div class="logo" id="logo"></div>
-    <div class="grow"><h1>PI Monitor</h1><div class="sub" id="lSub">Live stats over SSH, nothing running in the background.</div></div>
+    <div class="grow"><h1>PI Monitor</h1><div class="sub" id="lSub">Estatísticas ao vivo via SSH. Nada roda em segundo plano.</div></div>
+    <button class="ib" id="bSetL" aria-label="Configurações"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
   </div>
   <div class="scanbox f" id="scanBox">
-    <div class="radar"><div class="sweep"></div></div>
-    <div class="grow"><h3 id="scanTitle">Find your Raspberry Pi</h3><p id="scanMeta">Scans this Wi-Fi for SSH devices and spots Raspberry Pis by their network card.</p></div>
-    <button class="btn" id="bScan">Scan</button>
+    <div class="radar" id="scanIco"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div>
+    <div class="grow"><h3 id="scanTitle">Encontre seu Raspberry Pi</h3><p id="scanMeta">Procura dispositivos SSH nesta rede Wi-Fi e identifica Pis pelo endereço MAC.</p></div>
+    <button class="btn" id="bScan">Procurar</button>
   </div>
-  <div id="known" class="hide"><div class="sec">Your Pis</div><div class="cards" id="lKnown"></div></div>
-  <div id="found"><div class="sec">Raspberry Pi on this network <span class="cnt hide" id="cPi"></span></div>
-  <div class="cards" id="lPi"><div class="ecard">Tap Scan to look for Raspberry Pis.</div></div></div>
-  <div id="other" class="hide"><div class="sec">Other SSH devices <span class="cnt" id="cOt"></span></div><div class="cards sm" id="lOther"></div></div>
-  <div class="sec">Connect by IP</div>
-  <div class="mcard"><div class="f"><input id="iIp" type="text" placeholder="192.168.1.50" autocorrect="off" autocapitalize="off"><button class="btn" id="bOpen">Open</button></div>
-    <p>For a Pi the scan cannot see. Its SSH must accept this iPad's key.</p></div>
+  <div id="known" class="hide"><div class="sec">Seus Pis</div><div class="cards" id="lKnown"></div></div>
+  <div id="found"><div class="sec">Raspberry Pi na sua rede <span class="cnt hide" id="cPi"></span></div>
+  <div class="cards" id="lPi"><div class="ecard">Toque em Procurar para buscar Raspberry Pis.</div></div></div>
+  <div id="other" class="hide"><div class="sec">Outros dispositivos SSH <span class="cnt" id="cOt"></span></div><div class="cards sm" id="lOther"></div></div>
+  <div class="sec">Conectar por IP</div>
+  <div class="mcard"><div class="f"><input id="iIp" type="text" placeholder="192.168.1.50" autocorrect="off" autocapitalize="off"><button class="btn" id="bOpen">Abrir</button></div>
+    <p>Se o Pi estiver em outra rede, informe o IP. Usa a porta SSH 22 por padrão.</p></div>
 </div>
 
 <div id="vMon" class="hide">
   <div class="head f">
-    <button class="ib back" id="bBack" aria-label="Devices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button class="ib back" id="bBack" aria-label="Dispositivos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
     <div class="grow">
-      <div class="title"><span class="dot" id="dot"></span><span id="hName">&nbsp;</span></div>
+      <div class="title"><span id="hName">&nbsp;</span><span class="chip" id="chip">Online</span></div>
       <div class="sub" id="meta">&nbsp;</div>
     </div>
-    <div class="seg" id="seg"><b data-p="0" class="on tap" onclick="">Off</b><b data-p="1" class="tap" onclick="">1s</b><b data-p="5" class="tap" onclick="">5s</b><b data-p="30" class="tap" onclick="">30s</b><b data-p="60" class="tap" onclick="">60s</b></div>
-    <button class="ib pri" id="bRef" aria-label="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button>
+    <button class="btnGhost" id="bPause"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>Pausar</button>
+    <button class="ib pri" id="bRef" aria-label="Atualizar"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button>
+    <button class="ib" id="bSetM" aria-label="Configurações"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
   </div>
   <div class="err hide" id="err"></div>
 
+  <div class="alerts hide" id="alerts">
+    <h2 id="aTitle">0 alertas ativos</h2>
+    <div class="hint" id="aHint">Flags de throttling e subtensão reportadas pelo firmware.</div>
+    <div id="aList"></div>
+  </div>
+
   <div class="grid">
     <div class="card">
-      <h2>CPU <span class="r muted" id="freq"></span></h2>
-      <div class="gauge"><svg viewBox="0 0 132 132"><defs><linearGradient id="gc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff2d6f"/><stop offset="1" stop-color="#ff9a45"/></linearGradient></defs>
-        <circle cx="66" cy="66" r="56" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="12"/>
-        <circle id="rCpu" cx="66" cy="66" r="56" fill="none" stroke="url(#gc)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 352"/></svg>
-        <div class="c"><div class="v"><span id="cpu">&ndash;</span><small>%</small></div><div class="l" id="load">load &ndash;</div></div></div>
+      <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg></span>CPU</h2>
+      <div class="big"><span id="cpu">&ndash;</span><small>%</small></div>
+      <div class="bar"><i id="bCpu"></i></div>
+      <div class="det" id="load">Carga &ndash;</div>
+      <div class="det" id="freq">&ndash;</div>
       <div class="bars" id="cores"></div>
       <canvas id="gCpu"></canvas>
     </div>
     <div class="card">
-      <h2>Memory <span class="r muted" id="memT"></span></h2>
-      <div class="gauge"><svg viewBox="0 0 132 132"><defs><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4c8dff"/><stop offset="1" stop-color="#4cd6ff"/></linearGradient></defs>
-        <circle cx="66" cy="66" r="56" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="12"/>
-        <circle id="rMem" cx="66" cy="66" r="56" fill="none" stroke="url(#gm)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 352"/></svg>
-        <div class="c"><div class="v"><span id="mem">&ndash;</span><small>%</small></div><div class="l" id="memU">&ndash;</div></div></div>
-      <div class="kv"><span>Cache</span><b id="memC">&ndash;</b></div>
-      <div class="kv"><span>Swap (zram)</span><b id="swap">&ndash;</b></div>
+      <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10v4M10 10v4M14 10v4M18 10v4"/></svg></span>Memória</h2>
+      <div class="big"><span id="mem">&ndash;</span><small>%</small></div>
+      <div class="bar"><i id="bMem"></i></div>
+      <div class="det" id="memU">&ndash;</div>
+      <div class="det" id="memC">&ndash;</div>
       <canvas id="gMem"></canvas>
     </div>
     <div class="card">
-      <h2>Temperature <span class="r muted" id="fan"></span></h2>
-      <div class="gauge"><svg viewBox="0 0 132 132"><defs><linearGradient id="gt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ddc97"/><stop offset="1" stop-color="#c6f24c"/></linearGradient></defs>
-        <circle cx="66" cy="66" r="56" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="12"/>
-        <circle id="rTemp" cx="66" cy="66" r="56" fill="none" stroke="url(#gt)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 352"/></svg>
-        <div class="c"><div class="v"><span id="temp">&ndash;</span><small>&deg;C</small></div><div class="l" id="rp1">RP1 &ndash;</div></div></div>
-      <div class="chips" id="flags"></div>
+      <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg></span>Temperatura</h2>
+      <div class="big"><span id="temp">&ndash;</span><small>&deg;C</small></div>
+      <div class="bar"><i id="bTemp"></i></div>
+      <div class="det" id="thrLine">Sem throttling</div>
+      <div class="det" id="fan">&ndash;</div>
       <canvas id="gTemp"></canvas>
     </div>
 
     <div class="card w3">
-      <h2>Storage <span class="r muted" id="dfT"></span></h2>
-      <div class="stor">
-        <div class="donut"><svg viewBox="0 0 180 180" id="dSvg"><circle cx="90" cy="90" r="72" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="26"/></svg>
-          <div class="c"><div class="v" id="dPct">&ndash;</div><div class="l" id="dSub">used</div></div></div>
-        <div class="legend" id="legend"></div>
+      <h2>Armazenamento <span class="r muted" id="dfT"></span></h2>
+      <div class="sbar" id="sbar"></div>
+      <div class="legend" id="legend"></div>
+      <div class="foot"><span id="dAge">Tamanhos do Docker ainda não medidos.</span><span class="link tap" id="bDisk" onclick="">Medir</span></div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="card">
+      <h2>Rede</h2>
+      <div class="body">
+        <div class="nets"><div><div class="lbl">↓ Download</div><div class="n rx" id="rx">&ndash;</div></div><div><div class="lbl">↑ Upload</div><div class="n tx" id="tx">&ndash;</div></div></div>
+        <canvas id="gNet"></canvas>
+        <div id="ifs"></div>
       </div>
-      <div class="foot"><span id="dAge">Docker breakdown not measured yet.</span><span class="link tap" id="bDisk" onclick="">Measure</span></div>
     </div>
+    <div class="card">
+      <h2>Sistema</h2>
+      <div class="body">
+        <div class="kv"><span>Uptime</span><b id="up">&ndash;</b></div>
+        <div class="kv"><span>Processos / threads</span><b id="procs">&ndash;</b></div>
+        <div class="kv"><span>Containers</span><b id="ndk">&ndash;</b></div>
+        <div class="kv"><span>E/S de disco</span><b id="io">&ndash;</b></div>
+        <div class="kv"><span>Partição boot</span><b id="boot">&ndash;</b></div>
+        <div class="kv"><span>Janela de amostra</span><b id="win">&ndash;</b></div>
+        <div class="kv"><span>Latência SSH</span><b id="rtt">&ndash;</b></div>
+        <div class="kv"><span>Histórico do gráfico</span><b id="hist">&ndash;</b></div>
+      </div>
+    </div>
+  </div>
 
-    <div class="card w2">
-      <h2>Network</h2>
-      <div class="nets"><div><div class="lbl">&#8595; Download</div><div class="n rx" id="rx">&ndash;</div></div><div><div class="lbl">&#8593; Upload</div><div class="n tx" id="tx">&ndash;</div></div></div>
-      <canvas id="gNet"></canvas>
-      <div id="ifs"></div>
-    </div>
-    <div class="card w2">
-      <h2>System</h2>
-      <div class="kv"><span>Uptime</span><b id="up">&ndash;</b></div>
-      <div class="kv"><span>Processes / threads</span><b id="procs">&ndash;</b></div>
-      <div class="kv"><span>Containers</span><b id="ndk">&ndash;</b></div>
-      <div class="kv"><span>Disk I/O</span><b id="io">&ndash;</b></div>
-      <div class="kv"><span>Boot partition</span><b id="boot">&ndash;</b></div>
-      <div class="kv"><span>Sample window</span><b id="win">&ndash;</b></div>
-      <div class="kv"><span>SSH round trip</span><b id="rtt">&ndash;</b></div>
-      <div class="kv"><span>Chart history</span><b id="hist">&ndash;</b></div>
-    </div>
-
+  <div class="grid">
     <div class="card w3 lw2">
-      <h2>Docker containers</h2>
-      <table><thead><tr><th>Name</th><th class="r">CPU</th><th class="r">Memory</th></tr></thead><tbody id="tDk"></tbody></table>
+      <h2>Containers Docker</h2>
+      <table><thead><tr><th>Nome</th><th class="r">CPU</th><th class="r">Memória</th></tr></thead><tbody id="tDk"></tbody></table>
     </div>
     <div class="card w3 lw2">
-      <h2>Top processes</h2>
-      <table><thead><tr><th>Process</th><th class="r">PID</th><th class="r">CPU</th><th class="r">Memory</th></tr></thead><tbody id="tTop"></tbody></table>
+      <h2>Principais processos</h2>
+      <table><thead><tr><th>Processo</th><th class="r">PID</th><th class="r">CPU</th><th class="r">Memória</th></tr></thead><tbody id="tTop"></tbody></table>
     </div>
+  </div>
+</div>
+
+<div class="overlay hide" id="overlay">
+  <div class="modal" id="modal" onclick="">
+    <div class="f"><h2 class="grow">Configurações</h2>
+      <button class="xbtn" id="bClose" aria-label="Fechar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="secL">Atualizar a cada</div>
+    <div class="seg" id="seg"><b data-p="1" class="tap">1 s</b><b data-p="5" class="tap">5 s</b><b data-p="30" class="tap">30 s</b><b data-p="60" class="tap">60 s</b><b data-p="0" class="on tap">Off</b></div>
+    <div class="hint">Com que frequência o app busca dados novos. Intervalos maiores economizam bateria.</div>
+    <div class="secL">Aparência</div>
+    <div class="seg" id="segTheme"><b data-t="light" class="tap">Claro</b><b data-t="dark" class="tap">Escuro</b><b data-t="system" class="on tap">Sistema</b></div>
+    <div class="footR"><button class="btn" id="bDone">Pronto</button></div>
   </div>
 </div>
 
@@ -262,15 +345,62 @@ td .meter{width:54px;display:inline-block;vertical-align:middle;margin-left:8px;
 (function () {
 "use strict";
 var $ = function (id) { return document.getElementById(id); };
-var LS = window.localStorage, HIST = 120, GAP = 600, RING = 351.86, DONUT = 452.39;
+var LS = window.localStorage, HIST_WIN = 3600, HIST_MAX = 3600, GAP = 600;
 var host = null, period = 0, started = 0, timer = 0, xhr = null, busy = false, hist = {}, nodes = {}, disk = null, lastDf = null, diskBusy = false;
-var COL = { ok: "#3ddc97", warn: "#ffbe50", bad: "#f25f7a" };
-var SEG = [["img", "Docker images", "#4c8dff"], ["ctr", "Docker containers", "#3ddc97"], ["vol", "Docker volumes", "#ffbe50"],
-           ["bc", "Docker build cache", "#b57bff"], ["sc", "System cache", "#ff6fa3"], ["sys", "System & other", "#8b91a7"], ["free", "Free", "#262c3d"]];
+var themePref = "system";
+var COL = { ok: "", warn: "", crit: "" };
+var SEG = [["img", "Imagens Docker", "var(--segImg)"], ["ctr", "Containers", "var(--segCtr)"], ["vol", "Volumes", "var(--segVol)"],
+           ["bc", "Build cache", "var(--segBc)"], ["sc", "Cache do sistema", "var(--segSc)"], ["sys", "Sistema e outros", "var(--segSys)"], ["free", "Livre", "var(--segFree)"]];
 
 function store(k, v) { try { LS.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function load(k, d) { try { var v = LS.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
 var names = load("names", {});
+
+function cssVar(name) {
+  try {
+    var s = window.getComputedStyle(document.documentElement).getPropertyValue(name);
+    return (s || "").replace(/^\s+|\s+$/g, "");
+  } catch (e) { return ""; }
+}
+function refreshCols() {
+  COL.ok = cssVar("--ok") || "#15803D";
+  COL.warn = cssVar("--warn") || "#B45309";
+  COL.crit = cssVar("--crit") || "#DC2626";
+  COL.spark = cssVar("--spark") || "rgba(0,0,0,.2)";
+  COL.accent = cssVar("--accent") || "#D6245C";
+  COL.info = cssVar("--info") || "#2563EB";
+  COL.seg = {
+    img: cssVar("--segImg"), ctr: cssVar("--segCtr"), vol: cssVar("--segVol"),
+    bc: cssVar("--segBc"), sc: cssVar("--segSc"), sys: cssVar("--segSys"), free: cssVar("--segFree")
+  };
+}
+refreshCols();
+
+function resolveTheme(pref) {
+  if (pref === "dark") return "dark";
+  if (pref === "light") return "light";
+  if (window.matchMedia) {
+    try { if (window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark"; } catch (e) {}
+  }
+  return "light";
+}
+function applyTheme(pref) {
+  themePref = pref || "system";
+  store("theme", themePref);
+  document.documentElement.className = resolveTheme(themePref) === "dark" ? "theme-dark" : "theme-light";
+  refreshCols();
+  var b = el("segTheme").children, i;
+  for (i = 0; i < b.length; i++) b[i].className = (b[i].getAttribute("data-t") === themePref ? "on" : "") + " tap";
+  redraw();
+  drawDisk();
+}
+function openSettings() {
+  el("overlay").className = "overlay";
+  setPeriodUI();
+  var b = el("segTheme").children, i;
+  for (i = 0; i < b.length; i++) b[i].className = (b[i].getAttribute("data-t") === themePref ? "on" : "") + " tap";
+}
+function closeSettings() { el("overlay").className = "overlay hide"; }
 
 function get(url, cb, keep) {
   var x = new XMLHttpRequest();
@@ -280,7 +410,7 @@ function get(url, cb, keep) {
     if (x.readyState !== 4) return;
     if (x === xhr) xhr = null;
     var d;
-    try { d = JSON.parse(x.responseText); } catch (e) { d = { err: x.status ? "bad reply (" + x.status + ")" : "daemon not reachable" }; }
+    try { d = JSON.parse(x.responseText); } catch (e) { d = { err: x.status ? "resposta inválida (" + x.status + ")" : "daemon inacessível" }; }
     cb(d);
   };
   x.send();
@@ -299,18 +429,35 @@ function dur(s) {
   var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
   return (d ? d + "d " : "") + (d || h ? h + "h " : "") + m + "m";
 }
-function ago(s) { return s < 90 ? "just now" : s < 5400 ? Math.round(s / 60) + " min ago" : s < 129600 ? Math.round(s / 3600) + " h ago" : Math.round(s / 86400) + " days ago"; }
-function level(v, w, b) { return v >= b ? "bad" : v >= w ? "warn" : "ok"; }
+function ago(s) {
+  if (s < 90) return "agora";
+  if (s < 5400) return "há " + Math.round(s / 60) + " min";
+  if (s < 129600) return "há " + Math.round(s / 3600) + " h";
+  return "há " + Math.round(s / 86400) + " dias";
+}
+function level(v, w, b) { return v >= b ? "crit" : v >= w ? "warn" : "ok"; }
+function levelTemp(t) { return t > 80 ? "crit" : t >= 70 ? "warn" : "ok"; }
 function meter(m, p, cls) { p = Math.max(0, Math.min(100, p)); m.style.width = p + "%"; m.style.background = COL[cls || "ok"]; }
-function ring(id, p) { p = Math.max(0, Math.min(100, p)); el(id).setAttribute("stroke-dasharray", (p * RING / 100).toFixed(1) + " " + RING); }
+function fillBar(id, p, cls) { meter(el(id), p, cls); }
 
-/* sparklines: ring buffers kept by the daemon (hist-<ip>.csv), so a reopen continues the old lines;
-   hist.t = sample times (s), a dashed line marks breaks longer than GAP; series = [[values, color], ...] */
-function push(k, v) { var a = hist[k] || (hist[k] = []); a.push(v); if (a.length > HIST) a.shift(); return a; }
+/* sparklines: ring buffers; hist.t = sample times (s); dashed line marks breaks > GAP; window capped to 1 h */
+function push(k, v) { var a = hist[k] || (hist[k] = []); a.push(v); return a; }
+function trimHist() {
+  var t = hist.t;
+  if (!t || !t.length) return;
+  var cut = t[t.length - 1] - HIST_WIN, HK = ["t", "cpu", "mem", "temp", "rx", "tx"], i, k, a;
+  while (t.length && t[0] < cut) {
+    for (i = 0; i < HK.length; i++) { a = hist[HK[i]]; if (a && a.length) a.shift(); }
+  }
+  while (t.length > HIST_MAX) {
+    for (i = 0; i < HK.length; i++) { a = hist[HK[i]]; if (a && a.length) a.shift(); }
+  }
+}
 var HK = ["t", "cpu", "mem", "temp", "rx", "tx"];
 function loadHist(rows) {
   hist = {};
-  for (var i = Math.max(0, rows.length - HIST); i < rows.length; i++) for (var k = 0; k < HK.length; k++) push(HK[k], rows[i][k]);
+  for (var i = 0; i < rows.length; i++) for (var k = 0; k < HK.length; k++) push(HK[k], rows[i][k]);
+  trimHist();
 }
 function spark(id, series, max, auto) {
   var c = el(id), r = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight, i, s;
@@ -319,14 +466,15 @@ function spark(id, series, max, auto) {
   var g = c.getContext("2d");
   g.setTransform(r, 0, 0, r, 0, 0);
   g.clearRect(0, 0, w, h);
-  var lo = 0, hi = max || 0;
+  var lo = 0, hi = max || 0, n = (hist.t && hist.t.length) ? hist.t.length : HIST_MAX;
+  if (n < 2) n = 2;
   if (!max || auto) {
     hi = -1e18; lo = auto ? 1e18 : 0;
     for (s = 0; s < series.length; s++) for (i = 0; i < series[s][0].length; i++) { var v = series[s][0][i]; if (v > hi) hi = v; if (auto && v < lo) lo = v; }
     if (auto) { lo -= 2; hi += 2; } else hi = hi * 1.15 || 1;
   }
-  var step = w / (HIST - 1), t = hist.t || [];
-  g.strokeStyle = "rgba(255,255,255,.22)"; g.lineWidth = 1;
+  var step = w / (n - 1), t = hist.t || [];
+  g.strokeStyle = COL.spark; g.lineWidth = 1;
   for (i = 1; i < t.length; i++) if (t[i] - t[i - 1] > GAP) {
     var gx = Math.round(w - (t.length - 1 - i + 0.5) * step) + 0.5;
     for (var gy = 0; gy < h; gy += 5) { g.beginPath(); g.moveTo(gx, gy); g.lineTo(gx, Math.min(h, gy + 2.5)); g.stroke(); }
@@ -344,13 +492,12 @@ function spark(id, series, max, auto) {
 }
 function redraw() {
   if (!hist.cpu) return;
-  spark("gCpu", [[hist.cpu, "#ff4f7f"]], 100);
-  spark("gMem", [[hist.mem, "#4ca8ff"]], 100);
-  spark("gTemp", [[hist.temp, "#3ddc97"]], 0, true);
-  spark("gNet", [[hist.rx, "#4cc2ff"], [hist.tx, "#ff6fa3"]]);
+  spark("gCpu", [[hist.cpu, COL.accent]], 100);
+  spark("gMem", [[hist.mem, COL.info]], 100);
+  spark("gTemp", [[hist.temp, COL.ok]], 0, true);
+  spark("gNet", [[hist.rx, COL.info], [hist.tx, COL.accent]]);
 }
 
-/* reusable rows */
 function rows(tb, n, cols, build) {
   while (tb.rows.length < n) { var tr = tb.insertRow(-1); for (var i = 0; i < cols; i++) tr.insertCell(-1); build(tr); }
   for (var j = 0; j < tb.rows.length; j++) tb.rows[j].style.display = j < n ? "" : "none";
@@ -358,57 +505,92 @@ function rows(tb, n, cols, build) {
 function cell(td, s) { if (td.firstChild && td.firstChild.nodeType === 3) { if (td.firstChild.nodeValue !== s) td.firstChild.nodeValue = s; } else td.insertBefore(document.createTextNode(s), td.firstChild); }
 function meterEl() { var e = document.createElement("div"); e.className = "meter"; e.appendChild(document.createElement("i")); return e; }
 
-var THR = [[0, "Under-voltage", "bad"], [1, "Freq capped", "warn"], [2, "Throttled", "bad"], [3, "Soft temp limit", "warn"],
-           [16, "Under-voltage since boot", "warn"], [17, "Capped since boot", "warn"], [18, "Throttled since boot", "warn"], [19, "Temp limit since boot", "warn"]];
+var THR = [
+  [0, "Subtensão detectada agora", "A alimentação caiu abaixo do nível seguro.", "crit"],
+  [1, "Frequência limitada", "O clock foi limitado para proteger o SoC.", "warn"],
+  [2, "Throttling ativo", "A CPU está limitada por temperatura ou alimentação.", "crit"],
+  [3, "Limite suave de temperatura", "A temperatura atingiu o soft limit.", "warn"],
+  [16, "Subtensão ocorreu desde o boot", "Houve subtensão desde o último boot.", "warn"],
+  [17, "Frequência limitada desde o boot", "O clock foi limitado em algum momento desde o boot.", "warn"],
+  [18, "Throttling desde o boot", "Houve throttling desde o último boot.", "warn"],
+  [19, "Limite de temperatura desde o boot", "O soft temp limit foi atingido desde o boot.", "warn"]
+];
+var ICO_ALERT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>';
 
 function clock() { var t = new Date(), p = function (n) { return (n < 10 ? "0" : "") + n; }; return p(t.getHours()) + ":" + p(t.getMinutes()) + ":" + p(t.getSeconds()); }
 
-/* cached: the daemon's last saved reply (d.at = epoch s), shown greyed until the live one arrives */
+function renderAlerts(d) {
+  var fl = [], th = d.thr || 0, i, bit, chip, sev;
+  if (d.uv) fl.push({ title: "Subtensão detectada agora", desc: "A alimentação caiu abaixo do nível seguro.", sev: "crit", chip: "Crítico" });
+  for (i = 0; i < THR.length; i++) {
+    bit = THR[i][0];
+    if (!(th & (1 << bit))) continue;
+    if (d.uv && bit === 0) continue;
+    /* current flags (bits 0-3): Crítico; since-boot (16-19): Atenção */
+    chip = bit < 16 ? "Crítico" : "Atenção";
+    sev = chip === "Crítico" ? "crit" : "warn";
+    fl.push({ title: THR[i][1], desc: THR[i][2], sev: sev, chip: chip });
+  }
+  var box = el("alerts");
+  if (!fl.length) { box.className = "alerts hide"; nodes.alertsHtml = ""; return; }
+  box.className = "alerts";
+  txt("aTitle", fl.length + (fl.length === 1 ? " alerta ativo" : " alertas ativos"));
+  var h = "", row;
+  for (i = 0; i < fl.length; i++) {
+    row = fl[i];
+    h += '<div class="arow"><div class="atile ' + row.sev + '">' + ICO_ALERT + '</div><div class="grow"><div class="at">' + row.title +
+      '</div><div class="ad">' + row.desc + '</div></div><span class="achip ' + row.sev + '">' + row.chip + "</span></div>";
+  }
+  if (nodes.alertsHtml !== h) { el("aList").innerHTML = h; nodes.alertsHtml = h; }
+}
+
+/* cached: daemon's last saved reply (d.at = epoch s), greyed until live */
 function render(d, cached) {
-  var i, a, live = !cached;
+  var i, a, live = !cached, cls;
   if (live) {
     if (names[d.ip] !== d.host) { names[d.ip] = d.host; store("names", names); }
-    /* localStorage writes are synchronous disk I/O: the list-view snapshot is saved at most every 30 s */
     var now = Date.now(), osn = snap[d.ip];
     snap[d.ip] = { t: now, cpu: d.cpu, temp: d.temp, mem: d.mem[0] ? (d.mem[0] - d.mem[1]) * 100 / d.mem[0] : 0 };
     if (!osn || now - (nodes.snapAt || 0) > 30000) { nodes.snapAt = now; store("snap", snap); }
     push("t", Date.now() / 1000);
   }
   txt("hName", d.host);
-  el("dot").className = live ? "dot" : "dot old";
+  el("chip").className = live ? "chip" : "chip old";
+  el("chip").textContent = live ? "Online" : "Cache";
   el("vMon").className = live ? "" : "stale";
-  txt("meta", d.ip + " · up " + dur(d.up) + (live ? " · updated " + clock() : " · from " + ago(Date.now() / 1000 - d.at) + ", refreshing…"));
+  txt("meta", d.ip + " · ligado há " + dur(d.up) + (live ? " · atualizado " + clock() : " · de " + ago(Date.now() / 1000 - d.at) + ", atualizando…"));
 
-  txt("cpu", d.cpu.toFixed(0)); ring("rCpu", d.cpu);
-  txt("load", "load " + d.load[0].toFixed(2) + " · " + d.load[1].toFixed(2) + " · " + d.load[2].toFixed(2));
+  cls = level(d.cpu, 70, 85);
+  txt("cpu", d.cpu.toFixed(0)); fillBar("bCpu", d.cpu, cls);
+  txt("load", "Carga " + d.load[0].toFixed(2) + " · " + d.load[1].toFixed(2) + " · " + d.load[2].toFixed(2));
   a = d.freq;
   if (a.length) { var lo = Math.min.apply(null, a), hi = Math.max.apply(null, a); txt("freq", (lo === hi ? hi : lo + "–" + hi) + " MHz"); }
+  else txt("freq", "");
   var cb = el("cores");
   if (cb.children.length !== d.cores.length) {
     var h = "";
     for (i = 0; i < d.cores.length; i++) h += '<div><div class="meter"><i></i></div><span>' + i + "</span></div>";
     cb.innerHTML = h;
   }
-  for (i = 0; i < d.cores.length; i++) meter(cb.children[i].firstChild.firstChild, d.cores[i], level(d.cores[i], 60, 85));
+  for (i = 0; i < d.cores.length; i++) meter(cb.children[i].firstChild.firstChild, d.cores[i], level(d.cores[i], 70, 85));
   if (live) { push("cpu", d.cpu); }
 
   var mt = d.mem[0], used = mt - d.mem[1], mp = mt ? used * 100 / mt : 0;
-  txt("mem", mp.toFixed(0)); ring("rMem", mp);
-  txt("memU", size(used) + " used"); txt("memT", size(mt));
-  txt("memC", size(d.mem[2]));
-  txt("swap", d.swap[0] ? size(d.swap[1]) + " / " + size(d.swap[0]) : "none");
+  cls = level(mp, 70, 85);
+  txt("mem", mp.toFixed(0)); fillBar("bMem", mp, cls);
+  txt("memU", size(used) + " de " + size(mt) + " em uso");
+  txt("memC", "Cache " + size(d.mem[2]) + " · Swap " + (d.swap[0] ? size(d.swap[1]) : "nenhum"));
   if (live) { push("mem", mp); }
 
-  txt("temp", d.temp.toFixed(1)); ring("rTemp", (d.temp - 25) * 100 / 60); /* ring spans 25-85 C */
-  el("rTemp").setAttribute("stroke", d.temp >= 80 ? COL.bad : d.temp >= 65 ? COL.warn : "url(#gt)");
-  txt("rp1", d.rp1 != null ? "RP1 " + d.rp1.toFixed(1) + "°" : "");
-  txt("fan", d.fan != null ? (d.fan ? d.fan + " rpm" : "fan off") : "");
-  var fl = [], th = d.thr || 0;
-  if (d.uv) fl.push('<span class="bad">Under-voltage now</span>');
-  for (i = 0; i < THR.length; i++) if (th & (1 << THR[i][0])) fl.push('<span class="' + THR[i][2] + '">' + THR[i][1] + "</span>");
-  if (!fl.length) fl.push("<span>No throttling</span>");
-  fl = fl.join("");
-  if (nodes.flagsHtml !== fl) { el("flags").innerHTML = fl; nodes.flagsHtml = fl; }
+  cls = levelTemp(d.temp);
+  txt("temp", d.temp.toFixed(1)); fillBar("bTemp", Math.max(0, Math.min(100, (d.temp - 25) * 100 / 60)), cls);
+  var th = d.thr || 0, thrNow = d.uv || (th & 0xF);
+  txt("thrLine", thrNow ? "Throttling ativo" : "Sem throttling");
+  var fanS = "";
+  if (d.fan != null) fanS = d.fan ? "Ventoinha " + d.fan + " rpm" : "Ventoinha desligada";
+  if (d.rp1 != null) fanS = (fanS ? fanS + " · " : "") + "RP1 " + d.rp1.toFixed(1) + "°";
+  txt("fan", fanS || "");
+  renderAlerts(d);
   if (live) { push("temp", d.temp); }
 
   var rx = 0, tx = 0, it = [];
@@ -431,10 +613,11 @@ function render(d, cached) {
   txt("up", dur(d.up));
   txt("procs", d.nproc + " / " + d.threads);
   txt("ndk", String(d.dk.length));
-  txt("win", d.dt.toFixed(1) + " s" + (d.mode === "double" ? " (fresh)" : ""));
+  txt("win", d.dt.toFixed(1) + " s" + (d.mode === "double" ? " (fresco)" : ""));
   txt("rtt", d.ssh_ms + " ms");
   a = hist.t || [];
-  txt("hist", a.length ? a.length + " samples · since " + ago(Date.now() / 1000 - a[0]) : "–");
+  txt("hist", a.length ? a.length + " amostras · desde " + ago(Date.now() / 1000 - a[0]) : "–");
+  if (live) trimHist();
 
   var tb = el("tDk"), r;
   rows(tb, d.dk.length, 3, function (tr) { tr.cells[0].className = "n"; tr.cells[1].className = "r"; tr.cells[2].className = "r"; tr.cells[1].appendChild(meterEl()); });
@@ -463,7 +646,6 @@ function kvs(id, items) {
   }
 }
 
-/* ---- storage donut: live df of "/" + last Docker breakdown (measured on demand) ---- */
 function drawDisk() {
   if (!lastDf) return;
   var total = lastDf[1], used = lastDf[2], v = {}, i, k;
@@ -472,63 +654,52 @@ function drawDisk() {
     v.img = disk.img[0]; v.ctr = disk.ctr[0]; v.vol = disk.vol[0]; v.bc = disk.bc[0]; v.sc = disk.sc;
     v.sys = Math.max(0, used - v.img - v.ctr - v.vol - v.bc - v.sc);
   } else v.sys = used;
-  var svg = el("dSvg"), off = 0, leg = [];
+  var bar = el("sbar"), leg = [], offHtml = "", colors = COL.seg || {};
   for (i = 0; i < SEG.length; i++) {
     k = SEG[i][0];
-    var c = nodes["seg" + k];
-    if (!c) {
-      c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      c.setAttribute("cx", "90"); c.setAttribute("cy", "90"); c.setAttribute("r", "72"); c.setAttribute("fill", "none");
-      c.setAttribute("stroke-width", "26"); c.setAttribute("stroke", SEG[i][2]);
-      svg.appendChild(c); nodes["seg" + k] = c;
+    var val = v[k] || 0, pct = total ? val * 100 / total : 0;
+    if (v[k] != null && (disk || k === "sys" || k === "free")) {
+      var col = colors[k] || "#888";
+      if (pct > 0.05) offHtml += '<i style="width:' + pct + "%;background:" + col + '"></i>';
+      leg.push([col, disk || k !== "sys" ? SEG[i][1] : "Usado", val, pct]);
     }
-    var val = v[k] || 0, len = total ? val * DONUT / total : 0;
-    var gap = len > 3 && k !== "free" ? 1.5 : 0; /* thin separators between slices */
-    c.setAttribute("stroke-dasharray", Math.max(0, len - gap).toFixed(2) + " " + DONUT);
-    c.setAttribute("stroke-dashoffset", (-off).toFixed(2));
-    off += len;
-    if (v[k] != null && (disk || k === "sys" || k === "free")) leg.push([SEG[i][2], disk || k !== "sys" ? SEG[i][1] : "Used", val, total ? val * 100 / total : 0]);
   }
-  txt("dPct", (total ? used * 100 / total : 0).toFixed(0) + "%");
-  txt("dSub", "of " + size(total));
-  txt("dfT", size(used) + " used");
+  if (nodes.sbarHtml !== offHtml) { bar.innerHTML = offHtml; nodes.sbarHtml = offHtml; }
+  txt("dfT", size(used) + " usados · " + (total ? (used * 100 / total).toFixed(0) : 0) + "%");
   var box = el("legend");
-  while (box.children.length < leg.length) { var d = document.createElement("div"); d.className = "lg"; d.innerHTML = '<i></i><span class="nm"></span><span class="sz"></span><span class="pc"></span>'; box.appendChild(d); }
+  while (box.children.length < leg.length) { var d = document.createElement("div"); d.className = "lg"; d.innerHTML = '<i></i><span class="nm"></span><span class="sz"></span>'; box.appendChild(d); }
   for (i = 0; i < box.children.length; i++) {
     var e = box.children[i], it = leg[i];
     e.style.display = it ? "" : "none";
     if (!it) continue;
     if (e._c !== it[0]) { e._c = it[0]; e.children[0].style.background = it[0]; }
-    var t1 = size(it[2]), t2 = it[3] < 0.1 && it[2] ? "<0.1%" : it[3].toFixed(1) + "%";
+    var t1 = size(it[2]);
     if (e.children[1].textContent !== it[1]) e.children[1].textContent = it[1];
     if (e.children[2].textContent !== t1) e.children[2].textContent = t1;
-    if (e.children[3].textContent !== t2) e.children[3].textContent = t2;
   }
   diskAge();
 }
 function diskAge() {
   if (diskBusy) return;
-  if (!disk) { txt("dAge", "Docker breakdown not measured yet."); txt("bDisk", "Measure"); return; }
+  if (!disk) { txt("dAge", "Tamanhos do Docker ainda não medidos."); txt("bDisk", "Medir"); return; }
   var rec = disk.img[1] + disk.ctr[1] + disk.vol[1] + disk.bc[1];
-  txt("dAge", "Docker sizes measured " + ago(Date.now() / 1000 - disk.at) + (rec > 0 ? " · " + size(rec) + " reclaimable" : "") + ".");
-  txt("bDisk", "Measure again");
+  txt("dAge", "Tamanhos do Docker medidos " + ago(Date.now() / 1000 - disk.at) + (rec > 0 ? " · " + size(rec) + " recuperáveis" : "") + ".");
+  txt("bDisk", "Medir de novo");
 }
 function fetchDisk(force) {
   if (!host || diskBusy || (force && busy)) return;
   diskBusy = true;
-  if (force) { txt("dAge", "Measuring Docker usage on the Pi (low priority, a few seconds)…"); txt("bDisk", ""); }
+  if (force) { txt("dAge", "Medindo uso do Docker no Pi (baixa prioridade, alguns segundos)…"); txt("bDisk", ""); }
   var h = host;
   get("/api/disk?h=" + encodeURIComponent(h) + (force ? "&force=1" : ""), function (d) {
     diskBusy = false;
     if (h !== host) return;
-    if (d.err) { txt("dAge", "Measure failed: " + d.err); txt("bDisk", "Retry"); return; }
+    if (d.err) { txt("dAge", "Medição falhou: " + d.err); txt("bDisk", "Tentar de novo"); return; }
     disk = d; drawDisk();
   }, true);
-  /* stats wait while the Pi measures; resume polling afterwards */
   var t = setInterval(function () { if (!diskBusy) { clearInterval(t); if (period) refresh(); } }, 500);
 }
 
-/* ---- refresh / polling: one request in flight, nothing while hidden ---- */
 function refresh() {
   if (!host || busy || diskBusy) return;
   busy = true;
@@ -539,31 +710,32 @@ function refresh() {
     busy = false;
     el("bRef").className = "ib pri";
     var e = el("err");
-    if (d.err) { e.textContent = d.err; e.className = "err"; el("dot").className = "dot off"; }
+    if (d.err) { e.textContent = d.err; e.className = "err"; el("chip").className = "chip off"; el("chip").textContent = "Offline"; }
     else {
       e.className = "err hide"; render(d);
-      if (!disk && !nodes.diskTried) { nodes.diskTried = 1; fetchDisk(false); } /* cached file, or first measure */
+      if (!disk && !nodes.diskTried) { nodes.diskTried = 1; fetchDisk(false); }
     }
     schedule();
   });
 }
-/* period counts from the start of the last request, so 1s really means one sample per second */
 function schedule() { clearTimeout(timer); if (period && host && !document.hidden) timer = setTimeout(refresh, Math.max(50, period * 1000 - (Date.now() - started))); }
+function setPeriodUI() {
+  var b = el("seg").children, i;
+  for (i = 0; i < b.length; i++) b[i].className = (+b[i].getAttribute("data-p") === period ? "on" : "") + " tap";
+}
 function setPeriod(p) {
   period = p;
-  var b = el("seg").children;
-  for (var i = 0; i < b.length; i++) b[i].className = (+b[i].getAttribute("data-p") === p ? "on" : "") + " tap";
+  setPeriodUI();
   if (p && !busy) refresh(); else schedule();
 }
 function stop() { clearTimeout(timer); if (xhr) { xhr.abort(); xhr = null; } busy = false; el("bRef").className = "ib pri"; }
 
 function openHost(ip) {
   host = ip; store("last", ip);
-  hist = {}; disk = null; lastDf = null; nodes.diskTried = 0;
+  hist = {}; disk = null; lastDf = null; nodes.diskTried = 0; nodes.alertsHtml = ""; nodes.sbarHtml = "";
   txt("hName", names[ip] || ip); txt("meta", ip);
   el("vList").className = "hide"; el("vMon").className = "";
   setPeriod(0);
-  /* local cache first (no SSH): last numbers, chart history and storage breakdown, then a live refresh */
   busy = true;
   get("/api/cache?h=" + encodeURIComponent(ip), function (d) {
     busy = false;
@@ -579,60 +751,61 @@ function openHost(ip) {
 function showList() { stop(); store("snap", snap); host = null; setPeriod(0); store("last", null); el("vMon").className = "hide"; el("vList").className = ""; showKnown(null); }
 
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return "&#" + c.charCodeAt(0) + ";"; }); }
-/* Pi Monitor mark (raspberry + pulse), from the app icon in Pen */
 var MARK = '<svg viewBox="120 120 784 784"><path transform="matrix(1.598 0 0 1.598 266.585 132.639)" d="M0 4.32c0.07999-0.72 0.48-1.12 1.12-1.28 10.64-2 21.36-3.04 32.08-3.04 76.15999 0 114.47999 45.92001 117.43998 92.48 0.08002 0.72-0.31997 1.36-0.95999 1.59999-15.83999 6.08001-31.35998 12-47.76001 12-47.35998 0-93.27998-36-101.91998-101.75999z" fill="#1DB954"/><path transform="matrix(1.598 0 0 1.598 520.43 132)" d="M148.15997 3.44c0.08002 0 0.16001 0.08 0.24002 0.16-0.24002 0.24001-0.32 0.48-0.48001 0.72 0.08002-0.24 0.16001-0.48 0.48001-0.72-0.24002-0.07999-0.39999-0.07999-0.64001-0.16-10.63998-2.24001-21.35999-3.44-34.39999-3.44-70.48002 0-110.88001 46.39999-113.35999 92.16 0 0.8 0.56 1.52 1.28 1.84 15.28 5.92 29.75998 11.75999 45.75998 11.75999 47.84 0 93.20001-36.79998 101.11999-101.03999 0.08002-0.4 0.08002-0.88 0-1.28z" fill="#1DB954"/><path transform="matrix(1.598 0 0 1.598 278.089 310.049)" d="M94.87999 9.28c-8.56-6.16-19.28-9.28-30.07999-9.28-36.16 0-64.8 32.24-64.8 68.71999 0 3.12003 0.08 6.08002 0.39999 8.55999 0.16 0.88 1.04001 1.52002 1.92 1.36002 12.8-2.16 26.8 1.51999 36.96001 8.48001 0.87999 0.47998 1.92 0.31998 2.39999-0.48001 9.84-15.44 26.88-25.84 43.44002-28.24001 0.71997-0.15999 1.12-0.87999 0.95999-1.59999-4.96001-16.16 0-33.28 9.04001-45.12001 0.56-0.79999 0.47998-1.84-0.24002-2.39999z" fill="#E3245B"/><path transform="matrix(1.598 0 0 1.598 594.453 308.643)" d="M30.30926 0c-10.39999 0-21.60001 2.96001-29.51998 8.88-0.88 0.72-1.04001 2-0.4 2.96 10.39999 13.04001 14.15997 30 10 45.04-0.32001 1.2 0.39999 2.31999 1.51999 2.56 16.23999 2.88 31.67999 13.43999 41.28 26.64 0.72 0.88001 2 1.04001 2.88 0.4 10.72-8.07999 24.79999-10.63998 36.96-8.47998 0.88 0.15997 1.67999-0.48001 1.76001-1.36002 0.23999-2.39999 0.39999-4.88 0.39999-7.44 0-38.79999-31.20001-69.2-64.88001-69.2z" fill="#E3245B"/><path transform="matrix(1.598 0 0 1.598 208.557 298.546)" d="M190.88 0c-31.04 0-54.72 25.28-54.72 51.36 0 8.79999 3.35999 16.48 8.16001 22.31999-1.04001 0.08002-3.68 0.16-6.4 0.16001-32.32 0-56.56001 27.04-56.56001 58.63998 0 7.52002 1.52 14.80002 4.24001 20.80002l-2.32001 4.48001-5.04 0c-3.28-7.84003-5.20001-16.16-5.20001-25.36002 0-10.16 2.24001-19.83999 6-26.95999 0.40001-0.80002 0.16-1.83999-0.64-2.39999-7.59999-6-17.36-9.52002-26.63999-9.52002-28.39999 0-51.76 27.67999-51.76 59.04001 0 6.39999 0.8 12.23999 2.32001 17.44l12.15999 0c-1.59999 8.47998-2 15.28-3.2 22.47998 7.68001 10.64002 20.39999 16.48001 32.39999 16.48001 7.68001 0 14.64001-2.07999 20.08-5.19998l7.76001 0c3.59999 27.67999 28.80001 47.28 55.27999 47.28 16.72 0 32.72-8.16001 42.96002-18.80002 9.03998 16.16 26.63998 26.39999 43.84 26.39999 11.19998 0 21.51999-3.75998 28.79998-8.47998 3.44001 0.56 7.04001 0.88001 10.48001 0.88001 27.91999 0 52.88001-20.40003 55.76001-47.20001l7.59998 0c6.08002 3.28 13.20001 5.11999 20.16 5.11999 12.48001 0 24.56-6.72 30.64002-16.23999l8.63998-22.72c1.92002-6.08002 3.04001-12.48001 3.04001-18.39999 0-33.36002-25.04001-59.52002-52-59.52002-9.44 0-19.28 3.52002-25.20001 9.11999-0.63999 0.64002-0.79999 1.60001-0.39999 2.40003 4.32 8.31997 6.55999 18 6.55999 28 0 9.35998-1.75998 18.47998-4.88 24.87997l-4.95999-9.91998c0.95999-4.56 1.51999-9.36002 1.51999-14.32001 0-31.91998-25.59998-57.44-53.19999-57.91998-10.88 17.19998-30.16 27.67999-49.20001 29.59997l-2.47998-9.19998c28.72-2.64001 50.39999-22 50.39999-44.24 0-26.64-25.52001-50.48-54-50.48z" fill="#E3245B"/><path transform="matrix(1.598 0 0 1.598 249.841 642.343)" d="M36.88 0.09872c-9.2 2.79999-19.11999 3.12-27.6 2.23999-0.95999-0.07999-1.92 0.39999-2.4 1.20002-4.56 7.60001-6.88 16.32001-6.88 25.91998 0 31.04001 26.72 57.52002 53.28 57.52002 9.92 0 19.76001-3.36002 25.92-8.80002 0.40001-0.31998 0.56001-0.79999 0.48001-1.28-1.44-11.91998 1.28-23.91998 6.39999-31.83999 0.64-1.11999 0-2.47998-1.2-2.72-21.84-4.79999-39.11999-22.47998-44.8-41.12-0.56-0.95999-1.92-1.44-3.2-1.12z" fill="#E3245B"/><path transform="matrix(1.598 0 0 1.598 636.108 641.987)" d="M76.95755 2.64197c-9.28 1.19998-19.67999-0.40002-27.44-2.56-1.19998-0.32001-2.47998 0.31998-2.79999 1.51999-6.39999 20.48001-25.20001 37.20001-45.12 40.88-1.28 0.32001-2 1.75998-1.36001 2.96 5.36002 9.28 7.12 21.11999 5.92001 31.04-0.08002 0.63998 0.16 1.19998 0.63999 1.60001 7.12 5.59998 17.12 8.95999 26.24002 8.95999 28.39999 0 54.15997-27.28 54.15997-57.36001 0-9.75998-2.56-19.44-7.44-26.16001-0.63998-0.71997-1.67999-1.03998-2.79999-0.87997z" fill="#E3245B"/><path transform="matrix(1.598 0 0 1.598 390.568 691.05)" d="M142.08 12.97354c-3.6 0.08002-7.11999-0.23999-10.23999-0.47998-10 5.44-21.20001 8.88001-32.24002 8.88001-18 0-35.03998-9.44-44.23999-20.72001-0.88-0.80002-2.16-0.88-3.12-0.16-11.92001 9.03998-27.92001 13.35999-43.04 12.63998-6.15999 7.04001-9.2 16.64001-9.2 26.64002 0 31.44 31.59999 52.96002 62.48 52.96002 5.12 0 9.92001-0.64002 13.67999-1.44 4 0.79999 8.80002 1.27997 13.28 1.27997 32.96002 0 62.24002-24.16 62.24002-52.47998 0-10.80002-3.12-20.64002-9.60001-27.12003z" fill="#E3245B"/><path transform="matrix(1.598 0 0 1.598 338.291 782.9)" d="M24.72 0.20532c-7.44 4.08002-15.92 6.08002-23.11999 6.56-0.96001 0.08002-1.60001 0.88-1.60001 1.84003 0.40001 34.88001 30.48 59.67999 59.52 59.67999 18 0 36.23999-9.67999 42.88001-22.08002 0.63998-1.35999-0.39999-2.64001-1.92001-2.55999-33.28 2.08002-64.71999-16.96002-72.96-42.63999-0.39999-0.88-1.68001-1.28-2.8-0.80002z" fill="#E3245B"/><path transform="matrix(1.598 0 0 1.598 521.195 782.826)" d="M78.16125 0.25131c-1.04001-0.56-2.39999-0.16-2.79998 0.96002-10.48001 27.35999-42.64001 44.32001-73.28 42.47998-1.60001-0.08002-2.64001 1.35998-1.76001 2.64002 8.39999 13.27997 26.72 22 42.79999 22 30.72 0 60.08001-25.91998 60.16-59.84 0-1.04001-0.79999-1.92001-1.84-2-8.32-0.40002-16.55999-2.72-23.27999-6.24002z" fill="#E3245B"/><path transform="matrix(1.598 0 0 1.598 134.934 408.792)" d="M459.92004 100.99725l-115.76007 0-19.35998-37.04c-4.32001-7.60001-15.67999-7.67999-19.91999-0.32001l-42.55999 69.04001c-15.76-42.88001-29.36-91.60001-38.64-125.28-2.72-9.52-17.52002-9.92-21.04001-0.79999l-36.72 93.84-153.67999 0c-7.12 0-12.24 5.19998-12.24001 12.07998 0 6.95999 5.76 12.08002 12.56001 12.08002l163.35999 0c4.80002 0 8.95999-2.64002 10.56-6.96002l24.24002-58.87998 37.03997 112.07999c2.88001 8.56 15.83999 9.76001 20.08004 2.32001l45.51996-73.52002 9.92004 18.72c2.07996 3.92001 6 6.48001 10.39996 6.48001l126.08002 0c6.96002 0 12.23999-5.28 12.23999-12.07999 0.23999-6.64001-5.44-11.76001-12.07996-11.76001z" fill="#F1F2F2" stroke="#BBBDC0" stroke-width="0.28846441106200754"/></svg>', PIC = MARK;
 var seen = load("seen", {}), snap = load("snap", {});
-/* Device card. st: [class, label]; known Pis also show the last numbers seen (stored locally). */
+
 function card(h, st, small) {
   var nm = names[h.ip] || (h.pi ? "Raspberry Pi" : h.ip), sv = seen[h.ip] || {}, sn = snap[h.ip];
   var mac = h.mac || sv.mac, ban = (h.banner || sv.banner || "").replace(/^SSH-2\.0-/, "").replace(/_/g, " ");
-  var out = '<div class="dc' + (h.pi ? " pi" : "") + '" onclick="" data-ip="' + h.ip + '"><div class="f">' +
+  var simple = small || !sn;
+  var out = '<div class="dc' + (h.pi ? " pi" : "") + (simple ? " simple" : "") + '" onclick="" data-ip="' + h.ip + '"><div class="f">' +
     (h.pi ? '<div class="pic">' + PIC + "</div>" : '<div class="pic o">SSH</div>') +
     (st ? '<span class="pill ' + st[0] + '">' + st[1] + "</span>" : "") + "</div>" +
     '<b class="dn">' + esc(nm) + "</b>" + (nm !== h.ip ? '<div class="dip">' + h.ip + "</div>" : "");
   if (sn && !small) out += '<div class="stats"><div><b>' + sn.cpu.toFixed(0) + '%</b><span>CPU</span></div><div><b>' + sn.temp.toFixed(0) +
-    '&deg;</b><span>Temp</span></div><div><b>' + sn.mem.toFixed(0) + '%</b><span>RAM</span></div></div>';
+    '&deg;</b><span>Temp.</span></div><div><b>' + sn.mem.toFixed(0) + '%</b><span>Memória</span></div></div>';
   var meta = [ban, mac].filter(Boolean).join(" · ");
-  if (sn && !small) meta = "Last seen " + ago((Date.now() - sn.t) / 1000) + (meta ? " · " + meta : "");
+  if (sn && !small) meta = "Visto " + ago((Date.now() - sn.t) / 1000) + (meta ? " · " + meta : "");
   if (meta) out += '<div class="dmeta">' + esc(meta) + "</div>";
-  if (!small) out += '<div class="dgo">Open monitor &#8594;</div>';
+  if (!small) out += '<div class="dgo">' + (simple ? "Abrir" : "Abrir monitor →") + "</div>";
+  else out += '<div class="dgo">Abrir</div>';
   return out + "</div>";
 }
-/* Pis opened before (hostname seen in a reply): always listed, no scan needed to reach them. */
 function knownIps() { var a = [], k; for (k in names) if (names.hasOwnProperty(k) && /^\d+\.\d+\.\d+\.\d+$/.test(k)) a.push(k); return a; }
 function showKnown(found) {
   var ips = knownIps(), h = [], i;
   for (i = 0; i < ips.length; i++)
-    h.push(card({ ip: ips[i], pi: 1 }, found ? (found[ips[i]] ? ["on", "Online"] : ["off", "Not found"]) : ["", "Saved"]));
+    h.push(card({ ip: ips[i], pi: 1 }, found ? (found[ips[i]] ? ["on", "Online"] : ["off", "Não encontrado"]) : ["", "Salvo"]));
   el("known").className = ips.length ? "" : "hide";
   el("lKnown").innerHTML = h.join("");
 }
 function scan() {
   var b = el("bScan");
   if (b.className.indexOf("busy") >= 0) return;
-  b.className = "btn busy"; b.textContent = "Scanning…";
+  b.className = "btn busy"; b.textContent = "Procurando…";
   el("scanBox").className = "scanbox f scanning";
-  txt("scanTitle", "Scanning…"); txt("scanMeta", "Knocking on port 22 across this Wi-Fi.");
+  txt("scanTitle", "Procurando…"); txt("scanMeta", "Batendo na porta 22 nesta rede Wi-Fi.");
   get("/api/scan?k=" + knownIps().join(","), function (d) {
-    b.className = "btn"; b.textContent = "Scan again";
+    b.className = "btn"; b.textContent = "Procurar de novo";
     el("scanBox").className = "scanbox f";
-    if (d.err) { txt("scanTitle", "Scan failed"); txt("scanMeta", d.err); return; }
+    el("scanIco").innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+    if (d.err) { txt("scanTitle", "Busca falhou"); txt("scanMeta", d.err); return; }
     var pi = [], ot = [], found = {}, i, x, npi = 0;
     for (i = 0; i < d.hosts.length; i++) {
       x = d.hosts[i]; found[x.ip] = 1;
       seen[x.ip] = { mac: x.mac, banner: x.banner };
       if (x.pi || (x.known && names[x.ip])) npi++;
-      if (x.known && names[x.ip]) continue; /* already in "Your Pis" */
+      if (x.known && names[x.ip]) continue;
       if (x.pi) pi.push(card(x, ["on", "Online"])); else ot.push(card(x, null, true));
     }
     store("seen", seen);
     showKnown(found);
-    el("lPi").innerHTML = pi.join("") || '<div class="ecard">No ' + (knownIps().length ? "other " : "") + "Raspberry Pi found.</div>";
-    el("found").className = pi.length || !knownIps().length ? "" : "hide"; /* nothing new besides "Your Pis" */
+    el("lPi").innerHTML = pi.join("") || '<div class="ecard">Nenhum ' + (knownIps().length ? "outro " : "") + "Raspberry Pi encontrado.</div>";
+    el("found").className = pi.length || !knownIps().length ? "" : "hide";
     el("cPi").textContent = pi.length; el("cPi").className = pi.length ? "cnt" : "cnt hide";
     el("lOther").innerHTML = ot.join(""); el("cOt").textContent = ot.length; el("other").className = ot.length ? "" : "hide";
-    txt("scanTitle", npi ? npi + " Raspberry Pi" + (npi > 1 ? "s" : "") + " found" : "No Raspberry Pi found");
-    txt("scanMeta", d.hosts.length + " SSH device" + (d.hosts.length === 1 ? "" : "s") + " on " + d.me.replace(/\.\d+$/, ".0/24") + " · " + (d.ms / 1000).toFixed(1) + " s");
+    txt("scanTitle", npi ? npi + " Raspberry Pi" + (npi > 1 ? "s" : "") + " encontrado" + (npi > 1 ? "s" : "") : "Nenhum Raspberry Pi encontrado");
+    txt("scanMeta", d.hosts.length + " dispositivo" + (d.hosts.length === 1 ? "" : "s") + " SSH em " + d.me.replace(/\.\d+$/, ".0/24") + " · " + (d.ms / 1000).toFixed(1).replace(".", ",") + " s");
   });
 }
 function listTap(e) {
@@ -648,16 +821,38 @@ el("lKnown").onclick = listTap;
 el("bOpen").onclick = function () { var v = el("iIp").value.replace(/\s/g, ""); if (/^\d+\.\d+\.\d+\.\d+$/.test(v)) openHost(v); };
 el("bBack").onclick = showList;
 el("bRef").onclick = refresh;
+el("bPause").onclick = function () { setPeriod(0); };
 el("bDisk").onclick = function () { fetchDisk(true); };
+el("bSetL").onclick = openSettings;
+el("bSetM").onclick = openSettings;
+el("bClose").onclick = closeSettings;
+el("bDone").onclick = closeSettings;
+el("overlay").onclick = function (e) { if (e.target === el("overlay")) closeSettings(); };
+el("modal").onclick = function (e) { if (e.stopPropagation) e.stopPropagation(); };
 el("seg").onclick = function (e) { var p = e.target.getAttribute("data-p"); if (p != null) setPeriod(+p); };
+el("segTheme").onclick = function (e) {
+  var t = e.target.getAttribute("data-t");
+  if (t) applyTheme(t);
+};
 
-/* Leaving the app always turns polling off; coming back refreshes once, like reopening. */
 document.addEventListener("visibilitychange", function () {
   if (document.hidden) { stop(); setPeriod(0); }
   else if (host) refresh();
 });
 window.addEventListener("pagehide", function () { stop(); setPeriod(0); });
 window.addEventListener("orientationchange", function () { setTimeout(redraw, 300); });
+if (window.matchMedia) {
+  try {
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    var onScheme = function () { if (themePref === "system") applyTheme("system"); };
+    if (mq.addEventListener) mq.addEventListener("change", onScheme);
+    else if (mq.addListener) mq.addListener(onScheme);
+  } catch (e) {}
+}
+
+themePref = load("theme", "system");
+if (themePref !== "light" && themePref !== "dark" && themePref !== "system") themePref = "system";
+applyTheme(themePref);
 
 var last = load("last", null);
 el("logo").innerHTML = MARK;
