@@ -385,10 +385,24 @@ function resolveTheme(pref) {
   }
   return "light";
 }
+/* iOS 9 WebKit does not re-resolve var() when the class on <html> changes: re-parse the
+   stylesheets so every var() is computed again; if the page still has the old background, reload. */
+function forceRestyle(want) {
+  var st = document.getElementsByTagName("style"), i;
+  for (i = 0; i < st.length; i++) st[i].textContent = st[i].textContent + " ";
+  void document.body.offsetHeight;
+  var bg = window.getComputedStyle(document.body).backgroundColor.replace(/\s/g, "");
+  var dark = bg === "rgb(11,15,23)";
+  if ((want === "theme-dark") !== dark) location.reload();
+}
 function applyTheme(pref) {
   themePref = pref || "system";
   store("theme", themePref);
-  document.documentElement.className = resolveTheme(themePref) === "dark" ? "theme-dark" : "theme-light";
+  var want = resolveTheme(themePref) === "dark" ? "theme-dark" : "theme-light";
+  if (document.documentElement.className !== want) {
+    document.documentElement.className = want;
+    forceRestyle(want);
+  }
   refreshCols();
   var b = el("segTheme").children, i;
   for (i = 0; i < b.length; i++) b[i].className = (b[i].getAttribute("data-t") === themePref ? "on" : "") + " tap";
