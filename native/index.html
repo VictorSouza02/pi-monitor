@@ -153,7 +153,8 @@ td .meter{width:54px;display:inline-block;vertical-align:middle;margin-left:8px;
 .scanning .radar{background:var(--accentSoft);color:var(--accent)}
 @-webkit-keyframes spin{to{-webkit-transform:rotate(360deg)}}
 @keyframes spin{to{transform:rotate(360deg)}}
-.scanning .radar svg{-webkit-animation:spin 1.4s linear infinite;animation:spin 1.4s linear infinite}
+.spinner{display:block;width:22px;height:22px;border-radius:50%;border:2.5px solid currentColor;border-right-color:transparent;-webkit-animation:spin .75s linear infinite;animation:spin .75s linear infinite}
+.spinner.sm{display:inline-block;vertical-align:-2px;width:14px;height:14px;border-width:2px;margin-right:8px}
 .scanbox h3{font-size:17px;font-weight:600}
 .scanbox p{font-size:13px;color:var(--muted);margin-top:3px}
 .sec{font-size:13px;font-weight:600;color:var(--muted);margin:0 4px 12px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center}
@@ -783,8 +784,9 @@ function showKnown(found) {
 function scan() {
   var b = el("bScan");
   if (b.className.indexOf("busy") >= 0) return;
-  b.className = "btn busy"; b.textContent = "Procurando…";
+  b.className = "btn busy"; b.innerHTML = '<i class="spinner sm"></i>Procurando…';
   el("scanBox").className = "scanbox f scanning";
+  el("scanIco").innerHTML = '<i class="spinner"></i>';
   txt("scanTitle", "Procurando…"); txt("scanMeta", "Batendo na porta 22 nesta rede Wi-Fi.");
   get("/api/scan?k=" + knownIps().join(","), function (d) {
     b.className = "btn"; b.textContent = "Procurar de novo";
