@@ -435,7 +435,8 @@ function ago(s) {
   if (s < 129600) return "há " + Math.round(s / 3600) + " h";
   return "há " + Math.round(s / 86400) + " dias";
 }
-function level(v, w, b) { return v >= b ? "crit" : v >= w ? "warn" : "ok"; }
+/* ok < 70%, warn 70-85%, crit > 85%; temp ok < 70 C, warn 70-80, crit > 80 */
+function level(v, w, c) { return v > c ? "crit" : v >= w ? "warn" : "ok"; }
 function levelTemp(t) { return t > 80 ? "crit" : t >= 70 ? "warn" : "ok"; }
 function meter(m, p, cls) { p = Math.max(0, Math.min(100, p)); m.style.width = p + "%"; m.style.background = COL[cls || "ok"]; }
 function fillBar(id, p, cls) { meter(el(id), p, cls); }
