@@ -356,6 +356,9 @@ var SEG = [["img", "Imagens Docker", "var(--segImg)"], ["ctr", "Containers", "va
 function store(k, v) { try { LS.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function load(k, d) { try { var v = LS.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
 var names = load("names", {});
+/* User-chosen refresh interval (persisted); `period` is the live value, paused to 0 while hidden. */
+var savedP = load("period", 0);
+if ([0, 1, 5, 30, 60].indexOf(savedP) < 0) savedP = 0;
 
 function cssVar(name) {
   try {
@@ -751,7 +754,7 @@ function openHost(ip) {
   hist = {}; disk = null; lastDf = null; nodes.diskTried = 0; nodes.alertsHtml = ""; nodes.sbarHtml = "";
   txt("hName", names[ip] || ip); txt("meta", ip);
   el("vList").className = "hide"; el("vMon").className = "";
-  setPeriod(0);
+  clearTimeout(timer); period = savedP; setPeriodUI();
   busy = true;
   get("/api/cache?h=" + encodeURIComponent(ip), function (d) {
     busy = false;
@@ -846,7 +849,7 @@ el("bClose").onclick = closeSettings;
 el("bDone").onclick = closeSettings;
 el("overlay").onclick = function (e) { if (e.target === el("overlay")) closeSettings(); };
 el("modal").onclick = function (e) { if (e.stopPropagation) e.stopPropagation(); };
-el("seg").onclick = function (e) { var p = e.target.getAttribute("data-p"); if (p != null) setPeriod(+p); };
+el("seg").onclick = function (e) { var p = e.target.getAttribute("data-p"); if (p != null) { savedP = +p; store("period", savedP); setPeriod(savedP); } };
 el("segTheme").onclick = function (e) {
   var t = e.target.getAttribute("data-t");
   if (t) applyTheme(t);
@@ -854,8 +857,9 @@ el("segTheme").onclick = function (e) {
 
 document.addEventListener("visibilitychange", function () {
   if (document.hidden) { stop(); setPeriod(0); }
-  else if (host) refresh();
+  else if (host) { period = savedP; setPeriodUI(); refresh(); }
 });
+window.addEventListener("pageshow", function (e) { if (e.persisted && host && !document.hidden) { period = savedP; setPeriodUI(); refresh(); } });
 window.addEventListener("pagehide", function () { stop(); setPeriod(0); });
 window.addEventListener("orientationchange", function () { setTimeout(redraw, 300); });
 if (window.matchMedia) {
