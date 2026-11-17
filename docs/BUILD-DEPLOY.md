@@ -26,8 +26,9 @@ Env: `IPAD_HOST`, optional `IPAD_JUMP` (ProxyJump), `IPAD_PASS` or `~/.config/sp
 - `deploy.sh`: rebuild, push (verified by size, 3 tries), sign, `killall -9 pi5mon` (a running
   instance was seen to outlive SIGTERM); launchd starts the new binary on the
   next request.
-- `deploy-linux.sh`: same as `deploy.sh`, run from a Linux machine on the iPad's LAN when the
-  Mac cannot reach the iPad (seen 2026-11-16: Mac on 192.168.0.30 had no ARP reply from the iPad).
+- `deploy-linux.sh`: same as `deploy.sh`, run from a Linux machine on the iPad's LAN. Use it when the
+  Mac build host is on another network (another house; reached only over Tailscale) and so cannot
+  reach the iPad. `deploy.sh` only works from a Mac on the iPad's own network.
   Syncs the tree to `BUILD_HOST:BUILD_DIR` (default `server@server:pi5mon-build`), builds there,
   pushes with `sshpass`, keeps `pi5mon.bak-<date>` and checks the served ETag through a tunnel.
 

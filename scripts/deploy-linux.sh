@@ -1,5 +1,6 @@
 #!/bin/bash
-# Deploy from a Linux machine on the iPad's LAN when the Mac build host cannot reach the iPad.
+# Deploy from a Linux machine on the iPad's LAN when the Mac build host is on another network
+# (reached only over Tailscale) and so cannot reach the iPad.
 # Syncs the tree to the Mac, builds there (scripts/build.sh), pulls the binary back, then pushes,
 # signs and swaps it on the iPad over sshpass. Keeps the previous binary as pi5mon.bak-<date>.
 # Env: IPAD_PASS (required), IPAD_HOST (default 192.168.0.139),
