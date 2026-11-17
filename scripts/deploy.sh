@@ -4,6 +4,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 S="$ROOT/scripts"
+: "${IPAD_HOST:?set IPAD_HOST (iPad IP); if this Mac cannot reach the iPad use scripts/deploy-linux.sh}"
 "$S/build.sh"
 SIZE=$(stat -f %z "$ROOT/native/pi5mon")
 for try in 1 2 3; do
